@@ -144,7 +144,9 @@ final class WindowsWrapper implements InputStream
                     $timeoutWatcher = null;
                 }
 
-                $serverHandle->close();
+                if (!$serverHandle->isClosed()) {
+                    $serverHandle->close();
+                }
 
             });
 

@@ -16,6 +16,7 @@ use Nicodinus\PhpAsync\StdinWrapper\Utils;
 use RuntimeException;
 use function Amp\asyncCall;
 use function Amp\call;
+use function Amp\delay;
 use function escapeshellarg;
 use function is_resource;
 use function proc_get_status;
@@ -126,8 +127,32 @@ final class WindowsWrapper implements InputStream
                 throw new RuntimeException("Failed to initialize loopback process!");
             }
 
+            $initialized = false;
+
+            asyncCall(function () use (&$processHandle, &$timeoutWatcher, &$serverHandle, &$initialized) {
+
+                while (!$initialized && @proc_get_status($processHandle)['running']) {
+                    yield delay(10);
+                }
+
+                if (@proc_get_status($processHandle)['running']) {
+                    return;
+                }
+
+                if ($timeoutWatcher) {
+                    Loop::cancel($timeoutWatcher);
+                    $timeoutWatcher = null;
+                }
+
+                $serverHandle->close();
+
+            });
+
             /** @var ResourceSocket|null $resourceSocket */
             $resourceSocket = yield $resourceSocketDefer->promise();
+
+            $initialized = true;
+
             if (!$resourceSocket) {
 
                 if (@proc_get_status($processHandle)['running']) {

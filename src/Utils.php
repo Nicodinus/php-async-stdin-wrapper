@@ -4,6 +4,7 @@
 namespace Nicodinus\PhpAsync\StdinWrapper;
 
 
+use ReflectionClass;
 use function shell_exec;
 use function strtoupper;
 use function substr;
@@ -36,5 +37,15 @@ final class Utils
         } else {
             @shell_exec("kill -9 {$pid}");
         }
+    }
+
+    /**
+     * @return string
+     */
+    public static function getComposerVendorPath(): string
+    {
+        $reflection = new ReflectionClass(\Composer\Autoload\ClassLoader::class);
+
+        return dirname($reflection->getFileName(), 2);
     }
 }

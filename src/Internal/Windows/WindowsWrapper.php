@@ -109,6 +109,7 @@ final class WindowsWrapper implements InputStream
 
             $processHandle = @proc_open(
                 'php ' . escapeshellarg(__DIR__ . '/piped_stdin.php')
+                . ' ' . escapeshellarg(Utils::getComposerVendorPath())
                 . ' ' . escapeshellarg($serverHandle->getAddress()->toString())
                 ,
                 $descriptors,

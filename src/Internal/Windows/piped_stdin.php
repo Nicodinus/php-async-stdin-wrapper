@@ -1,10 +1,14 @@
 <?php
 
-if (!isset($argv[1])) {
+if (!isset($argv[1]) || !is_dir($argv[1]) || !is_file($argv[1] . DIRECTORY_SEPARATOR . "autoload.php")) {
     exit(-1);
 }
 
-require_once __DIR__ . "/../../../vendor/autoload.php";
+if (!isset($argv[2])) {
+    exit(-2);
+}
+
+require_once $argv[1] . DIRECTORY_SEPARATOR . "autoload.php";
 
 use Amp\ByteStream;
 use Amp\Loop;
@@ -19,7 +23,7 @@ Loop::run(static function () use (&$argv) {
 
     try {
 
-        $resourceSocket = yield Socket\connect($argv[1], (new Socket\ConnectContext())
+        $resourceSocket = yield Socket\connect($argv[2], (new Socket\ConnectContext())
             ->withTcpNoDelay()
         );
 

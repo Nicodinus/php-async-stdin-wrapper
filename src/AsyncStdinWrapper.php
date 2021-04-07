@@ -59,4 +59,14 @@ final class AsyncStdinWrapper implements InputStream
     {
         return $this->stdinStream->read();
     }
+
+    /**
+     * @return void
+     */
+    public function close(): void
+    {
+        if ($this->stdinStream instanceof WindowsWrapper) {
+            $this->stdinStream->close();
+        }
+    }
 }

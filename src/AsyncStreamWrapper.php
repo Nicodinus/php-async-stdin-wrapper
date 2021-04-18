@@ -8,7 +8,6 @@ use Amp\ByteStream\InputStream;
 use Amp\ByteStream\ResourceInputStream;
 use Amp\Failure;
 use Amp\Promise;
-use Nicodinus\PhpAsync\StdinWrapper\Internal\Windows\WindowsWrapper;
 use RuntimeException;
 use function Amp\ByteStream\getStdin;
 use function Amp\call;
@@ -22,7 +21,7 @@ use const STDOUT;
  *
  * @package Nicodinus\PhpAsync\StdinWrapper
  */
-final class AsyncStdinWrapper implements InputStream
+final class AsyncStreamWrapper implements InputStream
 {
     /** @var InputStream */
     private InputStream $stdinStream;
@@ -55,7 +54,7 @@ final class AsyncStdinWrapper implements InputStream
             }
 
             if (!stream_set_blocking($stdin, false)) {
-                $stdinStream = yield WindowsWrapper::create($stdin, $stdout, $stderr);
+                $stdinStream = yield SocketProcessWrapper::create($stdin, $stdout, $stderr);
             } else {
                 if ($stdin === STDIN) {
                     $stdinStream = getStdin();
@@ -82,7 +81,7 @@ final class AsyncStdinWrapper implements InputStream
      */
     public function close(): void
     {
-        if ($this->stdinStream instanceof WindowsWrapper) {
+        if ($this->stdinStream instanceof SocketProcessWrapper) {
             $this->stdinStream->close();
         } else if ($this->stdinStream instanceof ResourceInputStream) {
             $this->stdinStream->close();

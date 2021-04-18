@@ -37,6 +37,15 @@ final class SocketProcessWrapper implements InputStream
     /** @var resource|null */
     private $processHandle;
 
+    /** @var resource */
+    private $stdinResource;
+
+    /** @var resource|null */
+    private $stdoutResource;
+
+    /** @var resource|null */
+    private $stderrResource;
+
     //
 
     /**
@@ -44,11 +53,17 @@ final class SocketProcessWrapper implements InputStream
      *
      * @param ResourceSocket $resourceSocket
      * @param resource $processHandle
+     * @param resource $stdinResource
+     * @param resource|null $stdoutResource
+     * @param resource|null $stderrResource
      */
-    protected function __construct(ResourceSocket $resourceSocket, $processHandle)
+    protected function __construct(ResourceSocket $resourceSocket, $processHandle, $stdinResource, $stdoutResource = null, $stderrResource = null)
     {
         $this->resourceSocket = $resourceSocket;
         $this->processHandle = $processHandle;
+        $this->stdinResource = $stdinResource;
+        $this->stdoutResource = $stdoutResource;
+        $this->stderrResource = $stderrResource;
     }
 
     /**
@@ -175,7 +190,7 @@ final class SocketProcessWrapper implements InputStream
 
             }
 
-            return new static($resourceSocket, $processHandle);
+            return new static($resourceSocket, $processHandle, $descriptors[0], $descriptors[1] ?? null, $descriptors[2] ?? null);
 
         });
     }
@@ -205,5 +220,29 @@ final class SocketProcessWrapper implements InputStream
     public function read(): Promise
     {
         return $this->resourceSocket->read();
+    }
+
+    /**
+     * @return resource
+     */
+    public function getStdinResource()
+    {
+        return $this->stdinResource;
+    }
+
+    /**
+     * @return resource|null
+     */
+    public function getStdoutResource()
+    {
+        return $this->stdoutResource;
+    }
+
+    /**
+     * @return resource|null
+     */
+    public function getStderrResource()
+    {
+        return $this->stderrResource;
     }
 }

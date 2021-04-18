@@ -21,6 +21,9 @@ use function escapeshellarg;
 use function is_resource;
 use function proc_get_status;
 use function proc_open;
+use const STDERR;
+use const STDIN;
+use const STDOUT;
 
 /**
  * Class WindowsWrapper
@@ -60,11 +63,15 @@ final class WindowsWrapper implements InputStream
     }
 
     /**
+     * @param resource|null $stdin
+     * @param resource|false $stdout
+     * @param resource|false $stderr
+     *
      * @return Promise<static>|Failure<RuntimeException>
      */
-    public static function create(): Promise
+    public static function create($stdin = null, $stdout = STDOUT, $stderr = STDERR): Promise
     {
-        return call(function () {
+        return call(function () use (&$stdin, &$stdout, &$stderr) {
 
             $serverHandle = Server::listen("tcp://127.0.0.1:0", (new BindContext())
                 ->withReusePort()
@@ -103,10 +110,16 @@ final class WindowsWrapper implements InputStream
             });
 
             $descriptors = [
-                0 => STDIN,
-                1 => STDOUT,
-                2 => STDERR,
+                0 => $stdin && is_resource($stdin) ? $stdin : STDIN,
             ];
+
+            if ($stdout && is_resource($stdout)) {
+                $descriptors[1] = $stdout;
+            }
+
+            if ($stderr && is_resource($stderr)) {
+                $descriptors[2] = $stderr;
+            }
 
             $processHandle = @proc_open(
                 'php ' . escapeshellarg(__DIR__ . '/piped_stdin.php')

@@ -1,6 +1,8 @@
 <?php
 
-if (!isset($argv[1]) || !is_dir($argv[1]) || !is_file($argv[1] . DIRECTORY_SEPARATOR . "autoload.php")) {
+define('COMPOSER_AUTOLOAD_PATH', ($argv[1] ?? './') . DIRECTORY_SEPARATOR . "autoload.php");
+
+if (!is_file(COMPOSER_AUTOLOAD_PATH)) {
     exit(-1);
 }
 
@@ -8,7 +10,8 @@ if (!isset($argv[2])) {
     exit(-2);
 }
 
-require_once $argv[1] . DIRECTORY_SEPARATOR . "autoload.php";
+/** @noinspection PhpIncludeInspection */
+require_once COMPOSER_AUTOLOAD_PATH;
 
 use Amp\ByteStream;
 use Amp\Loop;

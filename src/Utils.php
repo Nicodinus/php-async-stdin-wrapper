@@ -4,6 +4,7 @@
 namespace Nicodinus\PhpAsync\StdinWrapper;
 
 
+use Composer\Autoload\ClassLoader;
 use ReflectionClass;
 use function shell_exec;
 use function strtoupper;
@@ -44,7 +45,7 @@ final class Utils
      */
     public static function getComposerVendorPath(): string
     {
-        $reflection = new ReflectionClass(\Composer\Autoload\ClassLoader::class);
+        $reflection = new ReflectionClass(ClassLoader::class);
 
         return dirname($reflection->getFileName(), 2);
     }

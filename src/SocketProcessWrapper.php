@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Nicodinus\PhpAsync\StdinWrapper\Internal\Windows;
+namespace Nicodinus\PhpAsync\StdinWrapper;
 
 
 use Amp\ByteStream\InputStream;
@@ -12,7 +12,6 @@ use Amp\Promise;
 use Amp\Socket\BindContext;
 use Amp\Socket\ResourceSocket;
 use Amp\Socket\Server;
-use Nicodinus\PhpAsync\StdinWrapper\Utils;
 use RuntimeException;
 use function Amp\asyncCall;
 use function Amp\call;
@@ -29,10 +28,8 @@ use const STDOUT;
  * Class WindowsWrapper
  *
  * @package Nicodinus\PhpAsync\StdinWrapper\Internal\Windows
- *
- * @internal
  */
-final class WindowsWrapper implements InputStream
+final class SocketProcessWrapper implements InputStream
 {
     /** @var ResourceSocket */
     private ResourceSocket $resourceSocket;
@@ -122,7 +119,7 @@ final class WindowsWrapper implements InputStream
             }
 
             $processHandle = @proc_open(
-                'php ' . escapeshellarg(__DIR__ . '/piped_stdin.php')
+                'php ' . escapeshellarg(__DIR__ . '/Internal/piped_stdin.php')
                 . ' ' . escapeshellarg(Utils::getComposerVendorPath())
                 . ' ' . escapeshellarg($serverHandle->getAddress()->toString())
                 ,

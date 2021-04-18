@@ -5,12 +5,17 @@ namespace Nicodinus\PhpAsync\StdinWrapper;
 
 
 use Amp\ByteStream\InputStream;
+use Amp\ByteStream\ResourceInputStream;
 use Amp\Failure;
 use Amp\Promise;
 use Nicodinus\PhpAsync\StdinWrapper\Internal\Windows\WindowsWrapper;
 use RuntimeException;
 use function Amp\ByteStream\getStdin;
 use function Amp\call;
+use function is_resource;
+use const STDERR;
+use const STDIN;
+use const STDOUT;
 
 /**
  * Class AsyncStdinWrapper
@@ -35,16 +40,28 @@ final class AsyncStdinWrapper implements InputStream
     }
 
     /**
+     * @param resource|null $stdin
+     * @param resource|false $stdout
+     * @param resource|false $stderr
+     *
      * @return Promise<static>|Failure<RuntimeException>
      */
-    public static function create(): Promise
+    public static function create($stdin = null, $stdout = STDOUT, $stderr = STDERR): Promise
     {
-        return call(function () {
+        return call(function () use (&$stdin, &$stdout, &$stderr) {
 
-            if (Utils::isWindowsOS()) {
-                $stdinStream = yield WindowsWrapper::create();
+            if (!$stdin || !is_resource($stdin)) {
+                $stdin = STDIN;
+            }
+
+            if (!stream_set_blocking($stdin, false)) {
+                $stdinStream = yield WindowsWrapper::create($stdin, $stdout, $stderr);
             } else {
-                $stdinStream = getStdin();
+                if ($stdin === STDIN) {
+                    $stdinStream = getStdin();
+                } else {
+                    $stdinStream = new ResourceInputStream($stdin);
+                }
             }
 
             return new static($stdinStream);
@@ -66,6 +83,8 @@ final class AsyncStdinWrapper implements InputStream
     public function close(): void
     {
         if ($this->stdinStream instanceof WindowsWrapper) {
+            $this->stdinStream->close();
+        } else if ($this->stdinStream instanceof ResourceInputStream) {
             $this->stdinStream->close();
         }
     }

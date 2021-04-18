@@ -77,6 +77,20 @@ final class AsyncStreamWrapper implements InputStream
     }
 
     /**
+     * @return resource
+     */
+    public function getStdinResource()
+    {
+        if ($this->stdinStream instanceof SocketProcessWrapper) {
+            return $this->stdinStream->getStdinResource();
+        } else if ($this->stdinStream instanceof ResourceInputStream) {
+            return $this->stdinStream->getResource();
+        } else {
+            throw new RuntimeException("Unsupported operation!");
+        }
+    }
+
+    /**
      * @return void
      */
     public function close(): void
